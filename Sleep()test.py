@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[17]:
-
-
 from datetime import datetime, time
 import pandas
 import ctypes
@@ -38,7 +32,7 @@ def period():
 
 #Function to call the variables in the while loop
 def current_parameters():
-    return now
+    return day
     return sunrise
     return sunset
     return sunrise_next
@@ -55,26 +49,27 @@ def changeBG(path):
 #The script will be ran just after user login (WIN TASK SCHEDULER)
 #This statement will run if the trigger event (user login) is between sunrise and sunset (during the day)
 while now > sunrise and now < sunset:
-	time.sleep(delta)
-	current_parameters()
-	path = 'C:\\wallpapers\\' + period() + '.jpg'
-	changeBG(path)
-	time.sleep(delta_next)
-	current_parameters()
-	path = 'C:\\wallpapers\\' + period() + '.jpg'
-	changeBG(path)
+    time.sleep(delta)
+    now = datetime.now().time() #Time right now
+    current_parameters()
+    path = 'C:\\wallpapers\\' + period() + '.jpg'
+    changeBG(path)
+    time.sleep(delta_next)
+    now = datetime.now().time() #Time right now
+    current_parameters()
+    path = 'C:\\wallpapers\\' + period() + '.jpg'
+    changeBG(path)
 
 #This statement will run if the trigger event (user login) is between sunset and sunrise (during the night)
 while now < sunrise or now > sunset:
-	time.sleep(delta_next)
-	current_parameters()
-	path = 'C:\\wallpapers\\' + period() + '.jpg'
-	changeBG(path)
-	time.sleep(delta)
-	current_parameters()
-	path = 'C:\\wallpapers\\' + period() + '.jpg'
-	changeBG(path)
-
+    time.sleep(delta_next)
+    current_parameters()
+    path = 'C:\\wallpapers\\' + period() + '.jpg'
+    changeBG(path)
+    time.sleep(delta)
+    current_parameters()
+    path = 'C:\\wallpapers\\' + period() + '.jpg'
+    changeBG(path)
 
 
 
