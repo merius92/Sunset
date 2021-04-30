@@ -76,20 +76,5 @@ while now < sunrise or now > sunset:
 	changeBG(path)
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
 
 
