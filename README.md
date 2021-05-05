@@ -3,7 +3,8 @@ This is a collection of Python scripts designed to change the Windows background
 
 ## Applications
 
-The script was designed to be ran in an Air Traffic Control Tower, a workplace where it's necessary to know when the night has began/day has started in order to perform specific actions (open the runway lights during the night, notice VFR traffic that the civil day has ended). 
+The script was designed to be ran in an Air Traffic Control Tower, a workplace where it's necessary to know when the night has began/day has started, in order to perform specific actions (open the runway lights during the night, notice VFR traffic that the civil day has ended). 
+
 Instead of checking the published data manually, this collection of scripts checks the data and perform a action in order to make the Air Traffic Controller aware that the day or night has begun.
 
 ## Script Description
