@@ -11,7 +11,7 @@ Instead of checking the published data manually, this collection of scripts chec
 
 The **sunset.pyw** script should be scheduled to be ran each minute in the background by Windows Task Scheduler. The script is designed to perform two main actions:
 * 5 minutes before sunset, it plays an alarm sound and opens the light (with a red color) in order to alert the user that a period change is about to happen in the near future.
-* it evaluates if in the last 60 seconds there has been a period change (ex: day has become night or vice-versa) and runs the actions: changes the wallpaper, plays a beep, and opens/closes the light (depending on the time of the day)
+* It evaluates if in the last 60 seconds there has been a period change (ex: day has become night or vice-versa) and runs the actions: changes the wallpaper, plays a beep, and opens/closes the light (depending on the time of the day)
 
 The **start_up.pyw** script should be scheduled to be ran on log on in the background by Windows Task Scheduler. This script runs a specific action depending on the time of the day (changes the background image and opens/closes the light).
 
