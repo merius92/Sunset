@@ -16,7 +16,7 @@ The **sunset.pyw** script should be scheduled to be ran each minute in the backg
 The **start_up.pyw** script should be scheduled to be ran on log on in the background by Windows Task Scheduler. This script runs a specific action depending on the time of the day (changes the background image and opens/closes the light).
 
 ## Prerequisites
-* Windows 10 computer
+* Windows 10 operating system
 * Microsoft Excel spreadsheet with the dates in a year in column A (starting 1st of Jan, going to 31st of Dec), and sunset + sunrise info in columns B and C (HH:MM:SS format) - sample data in **myfile.xlsx**.
 * 2 tasks added in **Task Scheduler**: one for **sunset.pyw**, one for **start_up.pyw**. Models can be found in tasks folder.
 
