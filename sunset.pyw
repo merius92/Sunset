@@ -7,10 +7,6 @@ from lxml import html
 import requests
 import re
 
-#Test metar
-#('LFQN','METAR LFQN 201630Z 18005KT 6000 -SHRA SCT030 BKN050 18/12 Q1014')
-#'METAR COR LRSV 091630Z 13008KT CAVOK 16/02 Q1022='
-
 aerodrome = 'LROP'
 source = 'https://flightplan.romatsa.ro/init/meteows/getopmet?ad=' + aerodrome
 page = requests.get(source)
