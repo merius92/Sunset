@@ -6,20 +6,16 @@ from PythonMETAR import *
 from lxml import html
 import requests
 import re
+from pathlib import Path
 
-aerodrome = 'LROP'
+aerodrome = 'LROD'
 source = 'https://flightplan.romatsa.ro/init/meteows/getopmet?ad=' + aerodrome
 page = requests.get(source)
 tree = html.fromstring(page.content)
 raw_report = tree.xpath('//div[@class="report"]/text()')[0]
 report = re.sub(' +', ' ', raw_report)[4:-3] #regex eliminates some of the whitespaces, while [4:-3] finishes the job
-print(report)
 
 report_metar = Metar(aerodrome, report)
-
-#Checks if there is a time difference greater than 32 minutes between NOW and the time METAR was latest submitted
-#It basically checks if the site is updated accordingly
-#time_zone_dif is the time (in hours) difference between the computer's time zone and UTC
 
 #Function to convert time objects into integers
 def seconds_in_time(time_value: time):
@@ -33,19 +29,22 @@ metar_time = int(hour) * 60 * 60 + int(minutes) * 60
 #Time zone difference
 time_zone_dif = 3
 
-#Actual moment in seconds
+#Actual moment in seconds relative to the day
 now = datetime.now().time()
+#Converting now to seconds
 seconds_now = seconds_in_time(now) - time_zone_dif * 60 * 60
 seconds_in_a_day = 24 * 60 * 60
 
+#Verifing the difference between now and METAR issue time
 if seconds_now > 0:
     delta_metar = seconds_now - metar_time
 else:
     delta_metar = seconds_in_a_day - metar_time - seconds_now
-    
+
+#Checking the AUTO METAR
 properties_auto = report_metar.getAttribute('auto')
 
-#Checks if METAR report is outdated (last issue time was less/more than 32 minutes ago)
+#Checks if METAR report is AUTO, valid, or outdated (last issue time was less/more than 32 minutes ago)
 def time_checker():
     if properties_auto == True:
         return 'AUTO METAR'
@@ -53,10 +52,9 @@ def time_checker():
         if delta_metar < 32 * 60:
             return 'METAR_OK'
         else:
-            return 'Check METAR time'
+            return 'Check METAR time'       
 
-print(delta_metar)        
-        
+#Variables that retrieve certain METAR attributes
 properties_cld = report_metar.getAttribute('cloud')
 properties_vis = report_metar.getAttribute('visibility')
 properties_wind = report_metar.getAttribute('wind')
@@ -136,7 +134,8 @@ if now > sunrise and now < sunset:
 else:
     day_night = 'night'
     delta = (seconds_in_time(now) - seconds_in_time(sunset))
-    
+
+#Script takes an action only during the day regarding the VMC/IMC conditions or if the METAR is out-sync or AUTO
 def vmc_imc_day_night():
     if day_night == 'night' and vmc_imc() == 'METAR OK':
         return 'night'
@@ -146,8 +145,12 @@ def vmc_imc_day_night():
 #delta_notification calculates the difference in seconds between now and sunset_minus_five
 delta_notification = seconds_in_time(now) - sunset_minus_five
 
+#The path the folder
+abs_path = Path().resolve()
 #The path to the wallpapers being used
-path = 'C:\\Users\\mariu\\Desktop\\Sunset\\wallpapers_desktop_only\\'+ day_night +'\\'+ vmc_imc_day_night() +'.jpg'
+target_path = abs_path / 'wallpapers' / day_night / f'{vmc_imc_day_night()}.jpg'
+#Converting the path to string
+path = str(target_path)
 
 #Function to change the wallpaper
 def changeBG(path):
