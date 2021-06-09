@@ -3,11 +3,36 @@
 from datetime import datetime, time
 import pandas
 import ctypes
-from yeelight import Bulb
+from blinkstick import blinkstick
+from pathlib import Path
 
+
+bstick = blinkstick.find_first() #Assigns a variable name to the blinkstick
+
+
+#Opens all the 32 LEDs on white color
+def bstick_turn_on():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="white")
+        x+=1
+
+#Closes all the 32 LEDs
+def bstick_turn_off():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x)
+        x+=1
 
 file_path = "myfile.xlsx"
-data = pandas.read_excel(file_path, header=0) #Header on line 0
+
+#Current year
+year =  datetime.today().year
+
+if(year % 4 != 0):
+    data = pandas.read_excel(file_path, sheet_name="nonleap_year", header=0) #Header on line 0
+else:
+    data = pandas.read_excel(file_path, sheet_name="leap_year", header=0)
 
 #Today as day number in reference to 1st of Jan
 day = datetime.now().timetuple().tm_yday
@@ -29,21 +54,24 @@ def seconds_in_time(time_value: time):
 #delta calculates the difference in seconds between now and sunset -during night- and sunrise -during day-
 if now > sunrise and now < sunset:
     day_night = 'day'
-    delta = (seconds_in_time(now)-seconds_in_time(sunrise))
+    delta = (seconds_in_time(now) - seconds_in_time(sunrise))
 else:
     day_night = 'night'
-    delta = (seconds_in_time(now)-seconds_in_time(sunset))
+    delta = (seconds_in_time(now) - seconds_in_time(sunset))
     
+#The path to the folder
+abs_path = Path().resolve()
 #The path to the wallpapers being used
-path = 'C:\\Users\\mariu\\Desktop\\Sunset\\wallpapers\\'+ day_night +'.jpg'
-mylight = Bulb("192.168.1.7") #IP of the Xiaomi lightbulb 
+target_path = abs_path / 'wallpapers' / f'{day_night}.jpg'
+#Converting the path to string
+path = str(target_path)
 
 #Function defined to perform an action (open/close the light) depending on the time of the day
 def on_off():
     if now > sunrise and now < sunset:
-        return mylight.turn_off()
+        return bstick_turn_off()
     else: 
-        return mylight.turn_on()
+        return bstick_turn_on()
 
 #Function to change the wallpaper
 def changeBG(path):

@@ -2,12 +2,69 @@ from datetime import datetime, time
 import pandas
 import ctypes
 from playsound import playsound
+from blinkstick import blinkstick
 from PythonMETAR import *
 from lxml import html
 import requests
 import re
 
-aerodrome = 'LROP'
+bstick = blinkstick.find_first() #Assigns a variable name to the blinkstick
+
+#Metar
+
+#Define light colors
+
+def bstick_turn_red():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="red")
+        x+=1
+
+def bstick_turn_purple():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="purple")
+        x+=1
+
+def bstick_turn_blue():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="blue")
+        x+=1
+        
+def bstick_turn_yellow():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="yellow")
+        x+=1
+
+#Closes all the 32 LEDs
+def bstick_turn_off():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x)
+        x+=1
+        
+def red():
+    return bstick_turn_red()
+
+def purple():
+    return bstick_turn_purple()
+
+def blue():
+    return bstick_turn_blue()
+
+def yellow():
+    return bstick_turn_yellow()
+
+def off():
+    return bstick_turn_off()
+
+#Test metar
+#('LFQN','METAR LFQN 201630Z 18005KT 6000 -SHRA SCT030 BKN050 18/12 Q1014')
+#'METAR COR LRSV 091630Z 13008KT CAVOK 16/02 Q1022='
+
+aerodrome = 'LROD'
 source = 'https://flightplan.romatsa.ro/init/meteows/getopmet?ad=' + aerodrome
 page = requests.get(source)
 tree = html.fromstring(page.content)
@@ -17,51 +74,51 @@ print(report)
 
 report_metar = Metar(aerodrome, report)
 
-#Checks if there is a time difference greater than 32 minutes between NOW and the time METAR was latest submitted
-#It basically checks if the site is updated accordingly
-#time_zone_dif is the time (in hours) difference between the computer's time zone and UTC
-
-#Function to convert time objects into integers
 def seconds_in_time(time_value: time):
     return (time_value.hour * 60 + time_value.minute) * 60 + time_value.second
 
-#Conversion of METAR time in seconds
-properties_time = report_metar.getAttribute('date_time')
-(day, hour, minutes) = properties_time
-metar_time = int(hour) * 60 * 60 + int(minutes) * 60
-
-#Time zone difference
-time_zone_dif = 3
-
-#Actual moment in seconds
-now = datetime.now().time()
-seconds_now = seconds_in_time(now) - time_zone_dif * 60 * 60
-seconds_in_a_day = 24 * 60 * 60
-
-if seconds_now > 0:
-    delta_metar = seconds_now - metar_time
-else:
-    delta_metar = seconds_in_a_day - metar_time - seconds_now
-    
-properties_auto = report_metar.getAttribute('auto')
-
-#Checks if METAR report is outdated (last issue time was less/more than 32 minutes ago)
+#Checks if there is a time difference greater than 32 minutes between NOW and the time METAR was latest submitted
+#It basically checks if the site is updated accordingly
+#time_zone_dif is the time (in hours) difference between the computer's time zone and UTC
 def time_checker():
+    properties_time = report_metar.getAttribute('date_time')
+    (day, hour, minutes) = properties_time
+    metar_time = int(hour)*60*60 + int(minutes)*60
+    time_zone_dif = 3
+    now = datetime.now().time()
+    seconds_now = seconds_in_time(now) - time_zone_dif*60*60
+    seconds_in_a_day = 24*60*60
+    if seconds_now > 0:
+        delta = seconds_now - metar_time
+    else:
+        delta = seconds_in_a_day - metar_time - seconds_now
+    properties_auto = report_metar.getAttribute('auto')
     if properties_auto == True:
         return 'AUTO METAR'
     else:    
-        if delta_metar < 32 * 60:
+        if delta < 32*60:
             return 'METAR_OK'
         else:
             return 'Check METAR time'
 
-print(delta_metar)        
-        
+#Testing material
+#report_metar1 = Metar('LFQN','METAR LFQN 201630Z 18005KT 0500 -SHRA 18/12 Q1014')
+#report_metar2 = Metar('LFQN','METAR LFQN 201630Z 18005KT 1000 -SHRA SCT005 BKN100 18/12 Q1014')
+#report_metar3 = Metar('LFQN','METAR LFQN 201630Z 18005KT 2000 -SHRA SCT005 BKN100 18/12 Q1014')
+#report_metar4 = Metar('LFQN','METAR LFQN 201630Z 18005KT 6000 -SHRA SCT005 BKN100 18/12 Q1014')
+#report_metar5 = Metar('LFQN','METAR LFQN 201630Z 18005KT 1300 -SHRA SCT005 BKN003 18/12 Q1014')
+#report_metar6 = Metar('LFQN','METAR LFQN 201630Z 18005KT 4000 -SHRA SCT005 BKN003 18/12 Q1014')
+#report_metar7 = Metar('LFQN','METAR LFQN 201630Z 18005KT 6000 -SHRA 18/12 Q1014')
+#report_metar8 = Metar('LRSV','METAR COR LRSV 091630Z 13008KT CAVOK 16/02 Q1022=')
+#report_metar9 = METAR LRBM 110830Z 19003KT 160V220 CAVOK 23/11 Q1016=
+
 properties_cld = report_metar.getAttribute('cloud')
 properties_vis = report_metar.getAttribute('visibility')
 properties_wind = report_metar.getAttribute('wind')
 
+
 #Modify the visibility function in order to bypass the library in case there is a CAVOK and WIND VARIATION [None] and return 9999 regardless of the conditions
+
 def adjusted_vis():
     if properties_vis is not None:
         return properties_vis
@@ -102,12 +159,40 @@ def vmc_imc():
     elif time_checker() == 'Check METAR':
         return 'Check METAR'
     else:
-        return 'METAR ERROR'
+        return 'ERROR'
 
 #Day/Night
 
+#Opens all the 32 LEDs on white color
+def bstick_turn_on():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="white")
+        x+=1
+
+#Closes all the 32 LEDs
+def bstick_turn_off():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x)
+        x+=1
+
+#Opens all the 32 LEDs on orange color (for 5 minutes pre-event notification)
+def bstick_notification():
+    x=0
+    while x < 32:
+        bstick.set_color(channel=0, index=x, name="lime")
+        x+=1
+
 file_path = "myfile.xlsx" #sunrise/sunset file path
-data = pandas.read_excel(file_path, header=0) #Header on line 0
+
+#Current year
+year =  datetime.today().year
+
+if(year % 4 != 0):
+    data = pandas.read_excel(file_path, sheet_name="nonleap_year", header=0) #Header on line 0
+else:
+    data = pandas.read_excel(file_path, sheet_name="leap_year", header=0)
 
 #Today as day number in reference to 1st of Jan
 day = datetime.now().timetuple().tm_yday
@@ -118,9 +203,13 @@ day = datetime.now().timetuple().tm_yday
 sunrise = data["sr"][day - 1]
 sunset = data["ss"][day - 1] 
 
+#Time right now
+now = datetime.now().time()
+
 #Function to convert time objects into integers
 def seconds_in_time(time_value: time):
     return (time_value.hour * 60 + time_value.minute) * 60 + time_value.second
+
 
 notification_minutes = 5
 notification_seconds = notification_minutes * 60
@@ -136,18 +225,27 @@ if now > sunrise and now < sunset:
 else:
     day_night = 'night'
     delta = (seconds_in_time(now) - seconds_in_time(sunset))
-    
-def vmc_imc_day_night():
-    if day_night == 'night' and vmc_imc() == 'METAR OK':
-        return 'night'
-    else:
-        return vmc_imc()
 
 #delta_notification calculates the difference in seconds between now and sunset_minus_five
 delta_notification = seconds_in_time(now) - sunset_minus_five
-
+    
+#The path to the folder
+abs_path = Path().resolve()
 #The path to the wallpapers being used
-path = 'C:\\Users\\mariu\\Desktop\\Sunset\\wallpapers_desktop_only\\'+ day_night +'\\'+ vmc_imc_day_night() +'.jpg'
+target_path = abs_path / 'wallpapers' / f'{day_night}.jpg'
+#Converting the path to string
+path = str(target_path)
+
+#Function defined to perform an action (open/close the light) depending on the time of the day
+def on_off():
+    if now > sunrise and now < sunset:
+        return bstick_turn_off()
+    else: 
+        return bstick_turn_on()
+
+#Function defined to perform turn on the lights on orange color for 5 minutes notification
+def notification_on():
+    return bstick_notification()
 
 #Function to change the wallpaper
 def changeBG(path):
@@ -157,8 +255,33 @@ def changeBG(path):
 if delta_notification < 60 and delta_notification > -1:
     playsound('alarm.wav') #Plays the sound
 
+if delta_notification < 60 and delta_notification > -1 and vmc_imc() == 'VMC':
+    notification_on() #Turns on the orange lights
+
 #Wallpaper changes, a three-beep sound is played, and light turns on only if delta is less than 60 seconds AND delta is greater than -1
 #In order for the light to turn on, the script should be ran on a computer that is on the same network as the light bulb (wireless)
-if (delta < 60 and delta > -1) or ((delta_metar < 60 and delta_metar > -1) and vmc_imc != "METAR OK"):
+if delta < 60 and delta > -1:
     changeBG(path) #Wallpaper change
     playsound('sound.mp3') #Plays the sound
+
+if delta < 60 and delta > -1 and vmc_imc() == 'VMC':
+    on_off() #Turns on/off the lights
+
+if vmc_imc() == 'Total IMC':
+    red()
+elif vmc_imc() == 'Special VFR for heli only':
+    purple()
+elif vmc_imc() == 'Special VFR':
+    blue()
+elif vmc_imc() == 'Check METAR time':
+    yellow()
+elif vmc_imc() == 'ERROR':
+    yellow()
+elif vmc_imc() == 'AUTO METAR':
+    yellow()
+elif vmc_imc() == 'Check conditions':
+    yellow()
+elif vmc_imc() == 'VMC' and delta_notification > 0 and delta_notification < notification_seconds - 1:
+    notification_on()
+else:
+    on_off()
