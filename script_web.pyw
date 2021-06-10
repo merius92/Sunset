@@ -6,7 +6,7 @@ import requests
 import re
 
 
-aerodrome = 'LROD'
+aerodrome = 'LROP'
 source = 'https://flightplan.romatsa.ro/init/meteows/getopmet?ad=' + aerodrome
 page = requests.get(source)
 tree = html.fromstring(page.content)
